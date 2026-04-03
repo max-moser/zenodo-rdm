@@ -8,6 +8,7 @@
 """Zenodo PID providers."""
 
 import copy
+import datacite
 
 from invenio_i18n import lazy_gettext as _
 from invenio_rdm_records import config as rdm_records_config
@@ -171,11 +172,61 @@ class LegacyParentDOIProvider(PIDProvider):
         return True, []
 
 
+class DummyDataCiteRESTClient(datacite.DataCiteRESTClient):
+    """Dummy DataCite REST API client wrapper that does not perform write operations."""
+
+    def __init__(self, *args, **kwargs):
+        """Constructor."""
+        super().__init__(*args, **kwargs)
+
+    def public_doi(self, metadata, url, doi=None):
+        """Do *not* create a public DOI."""
+        pass
+
+    def hide_doi(self, doi):
+        """Do *not* change the visibility of a DOI."""
+        pass
+
+    def show_doi(self, doi):
+        """Do *not* change the visibility of a DOI."""
+        pass
+
+    def delete_doi(self, doi):
+        """Do *not* delete a DOI."""
+        pass
+
+
+class DummyDataCiteClient(rdm_providers.DataCiteClient):
+    """Dummy DataCite client, not actually doing any minting.
+
+    The primary use case for this dummy DataCite client is for development instances
+    with existing records that already have DataCite DOIs or test handles.
+    Simply disabling the DataCite integration in such cases typically removes the "doi"
+    identifier from records, which can break functionality such as search.
+    Having this dummy client set will keep that field around, while not minting any
+    new DOIs.
+    """
+
+    @property
+    def api(self):
+        """DataCite REST API client instance."""
+        if self._api is None:
+            self.check_credentials()
+            self._api = DummyDataCiteRESTClient(
+                self.cfg("username"),
+                self.cfg("password"),
+                self.cfg("prefix"),
+                self.cfg("test_mode", True),
+            )
+        return self._api
+
+
+
 RDM_PERSISTENT_IDENTIFIER_PROVIDERS = [
     # DataCite DOI provider
     rdm_providers.DataCitePIDProvider(
         "datacite",
-        client=rdm_providers.DataCiteClient("datacite", config_prefix="DATACITE"),
+        client=DummyDataCiteClient("datacite", config_prefix="DATACITE"),
         label=_("DOI"),
         serializer=ZenodoDataciteJSONSerializer(),
     ),
@@ -196,7 +247,7 @@ RDM_PERSISTENT_IDENTIFIER_PROVIDERS = [
 RDM_PARENT_PERSISTENT_IDENTIFIER_PROVIDERS = [
     rdm_providers.DataCitePIDProvider(
         "datacite",
-        client=rdm_providers.DataCiteClient("datacite", config_prefix="DATACITE"),
+        client=DummyDataCiteClient("datacite", config_prefix="DATACITE"),
         serializer=ZenodoDataciteJSONSerializer(schema_context={"is_parent": True}),
         label=_("Concept DOI"),
     ),
