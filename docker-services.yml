@@ -33,6 +33,8 @@ services:
     read_only: true
     ports:
       - "${DOCKER_SERVICES_IP_BIND:-127.0.0.1}:6379:6379"
+    volumes:
+      - cache_data:/data
   db:
     image: postgres:14.15
     restart: "unless-stopped"
@@ -44,6 +46,7 @@ services:
       - "${DOCKER_SERVICES_IP_BIND:-127.0.0.1}:5432:5432"
     volumes:
       - ./docker/db/init-readonly-user.sql:/docker-entrypoint-initdb.d/init-readonly-user.sql
+      - db_data:/var/lib/postgresql/data
   pgadmin:
     image: dpage/pgadmin4:7.7
     restart: "unless-stopped"
@@ -69,6 +72,8 @@ services:
     ports:
       - "${DOCKER_SERVICES_IP_BIND:-127.0.0.1}:15672:15672"
       - "${DOCKER_SERVICES_IP_BIND:-127.0.0.1}:5672:5672"
+    volumes:
+      - mq_data:/var/lib/rabbitmq
   search:
     image: opensearchproject/opensearch:3.2.0
     restart: "unless-stopped"
@@ -97,6 +102,8 @@ services:
     ports:
       - "${DOCKER_SERVICES_IP_BIND:-127.0.0.1}:9200:9200"
       - "${DOCKER_SERVICES_IP_BIND:-127.0.0.1}:9300:9300"
+    volumes:
+      - search_data:/usr/share/opensearch/data
   opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:3.2.0
     ports:
@@ -117,3 +124,8 @@ services:
     environment:
       - "CORS=*"
       - "FILESYSTEM_PREFIX=/images/public"
+volumes:
+  cache_data:
+  db_data:
+  mq_data:
+  search_data:

@@ -30,6 +30,7 @@ services:
       service: frontend
     volumes:
       - static_data:/opt/invenio/var/instance/static
+      - /mnt/data-volume/zenodo:/mnt/data-volume/zenodo:ro
     depends_on:
       - web-ui
       - web-api
@@ -54,6 +55,7 @@ services:
       - static_data:/opt/invenio/var/instance/static
       - uploaded_data:/opt/invenio/var/instance/data
       - archived_data:/opt/invenio/var/instance/archive
+      - /mnt/data-volume/zenodo:/mnt/data-volume/zenodo
     depends_on:
       search:
         condition: service_started
@@ -79,6 +81,7 @@ services:
     volumes:
       - uploaded_data:/opt/invenio/var/instance/data
       - archived_data:/opt/invenio/var/instance/archive
+      - /mnt/data-volume/zenodo:/mnt/data-volume/zenodo
     depends_on:
       search:
         condition: service_started
@@ -94,6 +97,7 @@ services:
       service: iipserver
     volumes:
       - image_tiles:/images
+      - /mnt/data-volume/zenodo:/mnt/data-volume/zenodo
 
   # Worker
   worker:
@@ -108,6 +112,7 @@ services:
       - uploaded_data:/opt/invenio/var/instance/data
       - archived_data:/opt/invenio/var/instance/archive
       - image_tiles:/opt/invenio/var/instance/images
+      - /mnt/data-volume/zenodo:/mnt/data-volume/zenodo
     depends_on:
       search:
         condition: service_started
@@ -122,3 +127,7 @@ volumes:
   uploaded_data:
   archived_data:
   image_tiles:
+  cache_data:
+  db_data:
+  mq_data:
+  search_data:
