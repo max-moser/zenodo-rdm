@@ -23,6 +23,8 @@ dependencies = [
     "invenio-records-resources",
     "flask-debugtoolbar>=0.16.0",
     "gunicorn>=23.0.0",
+    "lxml>=5",
+    "sword2",
 ]
 
 [tool.uv.sources]
@@ -31,6 +33,7 @@ zenodo-legacy = { workspace = true }
 invenio-swh = { git = "https://github.com/inveniosoftware/invenio-swh", rev = "v0.13.4" }
 # User profile fixes
 invenio-records-resources = { git = "https://github.com/inveniosoftware/invenio-records-resources", branch = "fix-read-many" }
+sword2 = { git = "https://github.com/slint/python-client-sword2", branch = "support-314" }
 
 [tool.uv.workspace]
 members = [
